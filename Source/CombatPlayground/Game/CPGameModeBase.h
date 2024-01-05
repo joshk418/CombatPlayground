@@ -21,6 +21,8 @@ public:
 	ACPGameModeBase();
 
 	virtual void OnPostLogin(AController* NewPlayer) override;
+
+	void RespawnPlayer(AController* Controller);
 };
 
 

@@ -5,12 +5,14 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "AlsCharacterMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "AbilitySystem/WintAbilitySystemComponent.h"
 #include "AbilitySystem/WintAttributeSet.h"
 #include "Actor/WintPawnData.h"
 #include "CombatPlayground/Character/CPPlayerCharacter.h"
+#include "CombatPlayground/Game/CPGameModeBase.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/GameModeBase.h"
 #include "Input/WintInputComponent.h"
@@ -29,12 +31,15 @@ void ACPPlayerController::BeginPlay()
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
+	
+	ServerAssignHealthChangedDelegate(this);
+}
 
-	UWintAbilitySystemComponent* Asc = GetWintAbilitySystemComponent();
-	if (Asc)
+void ACPPlayerController::ServerAssignHealthChangedDelegate_Implementation(APlayerController* PlayerController)
+{
+	if (UWintAbilitySystemComponent* Asc = GetWintAbilitySystemComponent())
 	{
-		const UWintAttributeSet* Set = Cast<UWintAttributeSet>(Asc->GetAttributeSet(UWintAttributeSet::StaticClass()));
-		if (Set)
+		if (const UWintAttributeSet* Set = Cast<UWintAttributeSet>(Asc->GetAttributeSet(UWintAttributeSet::StaticClass())))
 		{
 			Asc->GetGameplayAttributeValueChangeDelegate(Set->GetHealthAttribute()).AddUObject(this, &ACPPlayerController::HealthChanged);
 		}
@@ -140,39 +145,49 @@ void ACPPlayerController::HealthChanged(const FOnAttributeChangeData& OnAttribut
 		{
 			PawnCharacter->StartRagdolling();
 			DisableInput(this);
-
-			GetWorldTimerManager().SetTimer(RespawnTimerHandle, this, &ACPPlayerController::Respawn, 5.f, false);
 		}
+		
+		GetWorldTimerManager().SetTimer(RespawnTimerHandle, this, &ACPPlayerController::OnRespawnTimerExpired, 3.f, false);
 	}
 }
 
-// todo: the game mode should control this
-void ACPPlayerController::Respawn()
+void ACPPlayerController::ServerStartDeathSequence_Implementation(APlayerController* PlayerController)
+{
+	if (ACPPlayerCharacter* PawnCharacter = Cast<ACPPlayerCharacter>(PlayerController->GetPawn()))
+	{
+		PawnCharacter->StartRagdolling();
+		DisableInput(PlayerController);
+	}
+}
+
+void ACPPlayerController::MulticastStartDeathSequence_Implementation(APlayerController* PlayerController)
+{
+	if (ACPPlayerCharacter* PawnCharacter = Cast<ACPPlayerCharacter>(PlayerController->GetPawn()))
+	{
+		PawnCharacter->StartRagdolling();
+		DisableInput(PlayerController);
+	}
+}
+
+void ACPPlayerController::OnRespawnTimerExpired()
 {
 	RespawnTimerHandle.Invalidate();
-
+	
 	ServerRespawn(this);
 }
 
 void ACPPlayerController::ServerRespawn_Implementation(APlayerController* PlayerController)
 {
-	if (PlayerController == nullptr)
+	if (!PlayerController)
 	{
 		UE_LOG(LogTemp, Error, TEXT("PlayerController is null"));
 		return;
 	}
 
-	if (AGameModeBase* GameMode = GetWorld()->GetAuthGameMode())
+	if (ACPGameModeBase* GameMode = Cast<ACPGameModeBase>(GetWorld()->GetAuthGameMode()))
 	{
-		AActor* PlayerStart = GameMode->FindPlayerStart(PlayerController);		
-		GameMode->RestartPlayerAtPlayerStart(PlayerController, PlayerStart);
-
-		if (ACPPlayerCharacter* PawnCharacter = Cast<ACPPlayerCharacter>(PlayerController->GetPawn()))
-		{
-			PawnCharacter->StopRagdolling();
-		}
-
-		EnableInput(PlayerController);
+		GameMode->RespawnPlayer(PlayerController);
 	}
+	
+	EnableInput(PlayerController);
 }
-

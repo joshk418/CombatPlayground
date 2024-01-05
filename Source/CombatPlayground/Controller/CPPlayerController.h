@@ -41,6 +41,9 @@ protected:
 	UPROPERTY()
 	FTimerHandle RespawnTimerHandle;
 
+	UPROPERTY()
+	FTimerHandle VisibilityTimerHandle;
+
 public:
 	ACPPlayerController();
 
@@ -54,11 +57,20 @@ protected:
 	void AbilityInputReleased(FGameplayTag InputTag);
 	void AbilityInputHeld(FGameplayTag InputTag);
 
+	UFUNCTION(Server, Reliable)
+	void ServerAssignHealthChangedDelegate(APlayerController* PlayerController);
+
 	void HealthChanged(const FOnAttributeChangeData& OnAttributeChangeData);
 
-	void Respawn();
+	UFUNCTION(Server, Reliable)
+	void ServerStartDeathSequence(APlayerController* PlayerController);
 
-	UFUNCTION(Reliable, Server)
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastStartDeathSequence(APlayerController* PlayerController);
+
+	void OnRespawnTimerExpired();
+
+	UFUNCTION(Server, Reliable)
 	void ServerRespawn(APlayerController* PlayerController);
 
 public:
