@@ -71,14 +71,29 @@ void ACPPlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	InitAbilityActorInfo();
+	if (NewController)
+	{
+		InitAbilityActorInfo();
+	}
 }
 
 void ACPPlayerCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 
-	InitAbilityActorInfo();
+	if (Controller)
+	{
+		InitAbilityActorInfo();
+	}
 }
 
+void ACPPlayerCharacter::StartCleanupTimer(float Time)
+{
+	GetWorldTimerManager().SetTimer(CleanupCharacterTimerHandle, this, &ACPPlayerCharacter::CleanupCharacter, Time, false);
+}
+
+void ACPPlayerCharacter::CleanupCharacter()
+{
+	Destroy();
+}
 

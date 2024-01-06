@@ -8,6 +8,7 @@
 #include "InputActionValue.h"
 #include "CPPlayerController.generated.h"
 
+class ACPPlayerCharacter;
 class UWintAbilitySystemComponent;
 struct FGameplayTag;
 class UWintInputConfig;
@@ -42,7 +43,10 @@ protected:
 	FTimerHandle RespawnTimerHandle;
 
 	UPROPERTY()
-	FTimerHandle VisibilityTimerHandle;
+	FTimerHandle UnPossessTimerHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Player/Respawn")
+	TSubclassOf<ACPPlayerCharacter> PlayerCharacterClass;
 
 public:
 	ACPPlayerController();
@@ -62,12 +66,8 @@ protected:
 
 	void HealthChanged(const FOnAttributeChangeData& OnAttributeChangeData);
 
-	UFUNCTION(Server, Reliable)
-	void ServerStartDeathSequence(APlayerController* PlayerController);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastStartDeathSequence(APlayerController* PlayerController);
-
+	void OnUnPossessTimerExpired();
+	
 	void OnRespawnTimerExpired();
 
 	UFUNCTION(Server, Reliable)
@@ -78,4 +78,9 @@ public:
 	virtual void SetupInputComponent() override;
 
 	UWintAbilitySystemComponent* GetWintAbilitySystemComponent();
+
+	TSubclassOf<ACPPlayerCharacter> GetPlayerCharacterClass() const
+	{
+		return PlayerCharacterClass;
+	}
 };

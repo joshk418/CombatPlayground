@@ -139,35 +139,31 @@ UWintAbilitySystemComponent* ACPPlayerController::GetWintAbilitySystemComponent(
 
 void ACPPlayerController::HealthChanged(const FOnAttributeChangeData& OnAttributeChangeData) 
 {
-	if (OnAttributeChangeData.NewValue <= 0 && !RespawnTimerHandle.IsValid())
+	if (OnAttributeChangeData.NewValue <= 0 && !UnPossessTimerHandle.IsValid())
 	{
 		if (ACPPlayerCharacter* PawnCharacter = Cast<ACPPlayerCharacter>(GetPawn()))
 		{
 			PawnCharacter->StartRagdolling();
-			DisableInput(this);
 		}
-		
-		GetWorldTimerManager().SetTimer(RespawnTimerHandle, this, &ACPPlayerController::OnRespawnTimerExpired, 3.f, false);
+
+		GetWorldTimerManager().SetTimer(UnPossessTimerHandle, this, &ACPPlayerController::OnUnPossessTimerExpired, 1.5f, false);
 	}
 }
 
-void ACPPlayerController::ServerStartDeathSequence_Implementation(APlayerController* PlayerController)
+void ACPPlayerController::OnUnPossessTimerExpired()
 {
-	if (ACPPlayerCharacter* PawnCharacter = Cast<ACPPlayerCharacter>(PlayerController->GetPawn()))
+	UnPossessTimerHandle.Invalidate();
+
+	if (ACPPlayerCharacter* PawnCharacter = Cast<ACPPlayerCharacter>(GetPawn()))
 	{
-		PawnCharacter->StartRagdolling();
-		DisableInput(PlayerController);
+		PawnCharacter->StartCleanupTimer(5);
 	}
+	
+	UnPossess();
+	
+	GetWorldTimerManager().SetTimer(RespawnTimerHandle, this, &ACPPlayerController::OnRespawnTimerExpired, 3.5f, false);
 }
 
-void ACPPlayerController::MulticastStartDeathSequence_Implementation(APlayerController* PlayerController)
-{
-	if (ACPPlayerCharacter* PawnCharacter = Cast<ACPPlayerCharacter>(PlayerController->GetPawn()))
-	{
-		PawnCharacter->StartRagdolling();
-		DisableInput(PlayerController);
-	}
-}
 
 void ACPPlayerController::OnRespawnTimerExpired()
 {
@@ -186,8 +182,6 @@ void ACPPlayerController::ServerRespawn_Implementation(APlayerController* Player
 
 	if (ACPGameModeBase* GameMode = Cast<ACPGameModeBase>(GetWorld()->GetAuthGameMode()))
 	{
-		GameMode->RespawnPlayer(PlayerController);
+		GameMode->RespawnPlayer(PlayerController, PlayerCharacterClass);
 	}
-	
-	EnableInput(PlayerController);
 }

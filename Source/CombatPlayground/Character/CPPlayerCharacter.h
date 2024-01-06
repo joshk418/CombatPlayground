@@ -20,6 +20,9 @@ class COMBATPLAYGROUND_API ACPPlayerCharacter : public ACPCharacterBase
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
+	UPROPERTY()
+	FTimerHandle CleanupCharacterTimerHandle;
+
 public:
 	ACPPlayerCharacter();
 
@@ -29,9 +32,14 @@ private:
 protected:
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+	void CleanupCharacter();
+
 public:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
+
+	void StartCleanupTimer(float Time);
 	
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }

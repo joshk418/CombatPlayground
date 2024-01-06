@@ -22,7 +22,7 @@ public:
 
 	virtual void OnPostLogin(AController* NewPlayer) override;
 
-	void RespawnPlayer(AController* Controller);
+	void RespawnPlayer(AController* Controller, TSubclassOf<ACharacter> CharacterClass);
 };
 
 
