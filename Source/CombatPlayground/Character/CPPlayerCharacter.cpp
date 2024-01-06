@@ -10,6 +10,7 @@
 #include "Player/WintPlayerState.h"
 #include "UI/HUDs/WintHUD.h"
 #include "AbilitySystem/WintAttributeSet.h"
+#include "CombatPlayground/Component/CPInteractionComponent.h"
 
 ACPPlayerCharacter::ACPPlayerCharacter()
 {
@@ -32,6 +33,8 @@ ACPPlayerCharacter::ACPPlayerCharacter()
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>("FollowCamera");
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+
+	InteractionComponent = CreateDefaultSubobject<UCPInteractionComponent>("InteractionComponent");
 }
 
 void ACPPlayerCharacter::InitAbilityActorInfo()
@@ -95,5 +98,11 @@ void ACPPlayerCharacter::StartCleanupTimer(float Time)
 void ACPPlayerCharacter::CleanupCharacter()
 {
 	Destroy();
+}
+
+void ACPPlayerCharacter::GetActorEyesViewPoint(FVector& OutLocation, FRotator& OutRotation) const
+{
+	OutLocation = FollowCamera->GetComponentLocation();
+	OutRotation = FollowCamera->GetComponentRotation();
 }
 

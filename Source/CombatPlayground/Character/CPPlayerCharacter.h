@@ -6,6 +6,7 @@
 #include "CPCharacterBase.h"
 #include "CPPlayerCharacter.generated.h"
 
+class UCPInteractionComponent;
 class UGameplayEffect;
 struct FGameplayEffectSpec;
 
@@ -23,6 +24,10 @@ class COMBATPLAYGROUND_API ACPPlayerCharacter : public ACPCharacterBase
 	UPROPERTY()
 	FTimerHandle CleanupCharacterTimerHandle;
 
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player|Interaction")
+	TObjectPtr<UCPInteractionComponent> InteractionComponent;
+
 public:
 	ACPPlayerCharacter();
 
@@ -34,6 +39,8 @@ protected:
 
 	UFUNCTION()
 	void CleanupCharacter();
+
+	virtual void GetActorEyesViewPoint(FVector& OutLocation, FRotator& OutRotation) const override;
 
 public:
 	virtual void PossessedBy(AController* NewController) override;
