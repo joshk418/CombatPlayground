@@ -93,6 +93,11 @@ void UCPInteractionComponent::PrimaryInteract()
 
 void UCPInteractionComponent::ServerPrimaryInteract_Implementation(AActor* InFocusedActor)
 {
+	if (FocusedActor)
+	{
+		APawn* OwningPawn = Cast<APawn>(GetOwner());
+		IInteractableInterface::Execute_PrimaryInteract(InFocusedActor, OwningPawn);
+	}
 }
 
 void UCPInteractionComponent::SecondaryInteract()

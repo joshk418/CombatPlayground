@@ -1,0 +1,6 @@
+[submodule "Plugins/AbilityHelper"]
+	path = Plugins/AbilityHelper
+	url = https://github.com/joshk418/AbilityHelper.git
+[submodule "Plugins/ALS-Refactored"]
+	path = Plugins/ALS-Refactored
+	url = https://github.com/Sixze/ALS-Refactored.git
