@@ -4,7 +4,7 @@ This project is made to test out my own code library Plugin, [AbilityHelper](htt
 
 To clone the repo with all of the required submodules, use the recursive flag:
 
-`git clone https://github.com/joshk418/CombatPlayground.git --recursive`
+`git clone --recursive https://github.com/joshk418/CombatPlayground.git`
 
 Controls:
 | Action | Key | Gamepad |
